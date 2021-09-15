@@ -1,7 +1,7 @@
 CC = gcc
 DEBUG = -g
 CFLAGS = -Wall -std=c99 -pedantic -c $(DEBUG)
-LFLAGS = -Wall -std=c99 -pedantic $(DEBUG)
+LFLAGS = -pthread -Wall -std=c99 -pedantic $(DEBUG)
 
 all: server client
 

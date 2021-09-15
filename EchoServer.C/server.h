@@ -1,6 +1,7 @@
 /************************************************************************
  * libraries
  ************************************************************************/
+
 // should always be there ...
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,6 +19,9 @@
 
 // I ADDED THIS STATEMENT (ECB)
 #include <signal.h>
+
+// multithreading
+#include <pthread.h>
 
 /************************************************************************
  * function prototype declarations
