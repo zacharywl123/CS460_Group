@@ -26,13 +26,14 @@
 /************************************************************************
  * function prototype declarations
  ************************************************************************/
-void handle_client(int client_socket);
+void *handle_client(void *client_socket_void);
 
 /************************************************************************
  * preprocessor directives
  ************************************************************************/
-#define SERVER_ADDR "time.nist.gov" // loopback ip address
-#define PORT 13              // port the server will listen on
+#define SERVER_ADDR "127.0.0.1" // loopback ip address
+// #define SERVER_ADDR "time.nist.gov" // loopback ip address
+#define PORT 8800             // port the server will listen on
 
 // I cannot let go of the old-fashioned way :) - for readability ...
 #define FALSE false
@@ -40,3 +41,4 @@ void handle_client(int client_socket);
 
 // number of pending connections in the connection queue
 #define NUM_CONNECTIONS 1
+#define MAX_CLIENTS 50
