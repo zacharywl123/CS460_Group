@@ -29,13 +29,14 @@ int main(int argc, char** argv) {
         perror("Error binding socket");
         exit(EXIT_FAILURE);
     }
-    printf("server bound\n");
+    printf("Server Bound\n");
     
     // listen for client connections (pending connections get put into a queue)
     if (listen(server_socket, NUM_CONNECTIONS) == -1) {
         perror("Error listening on socket");
         exit(EXIT_FAILURE);
     }
+    printf("Listened to Socket, awaiting connections...\n");
     
     // server loop
     while (TRUE) {
@@ -51,6 +52,9 @@ int main(int argc, char** argv) {
                 perror("Error creating thread");
                 break;
             }
+
+            // detatch if ready
+            pthread_detach(p_id);
         }
     }
 
@@ -97,7 +101,7 @@ void *handle_client(void *client_socket_void) {
         perror("Error closing socket");
         exit(EXIT_FAILURE);
     } else {
-        printf("\nClosed socket to client, exit");
+        printf("\nClosed socket to client, exit\n");
     }
 
     return 0;

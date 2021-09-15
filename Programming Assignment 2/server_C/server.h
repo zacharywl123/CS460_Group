@@ -41,3 +41,4 @@ void *handle_client(void *client_socket_void);
 
 // number of pending connections in the connection queue
 #define NUM_CONNECTIONS 1
+#define MAX_CLIENTS 50
