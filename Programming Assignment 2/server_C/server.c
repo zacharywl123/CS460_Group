@@ -8,6 +8,7 @@ int main(int argc, char** argv) {
     int server_socket;                 // descriptor of server socket
     struct sockaddr_in server_address; // for naming the server's listening socket
     int client_socket;
+    pthread_t p_id;
 
     // sent when ,client disconnected
     signal(SIGPIPE, SIG_IGN);
@@ -24,10 +25,11 @@ int main(int argc, char** argv) {
     server_address.sin_port        = htons(PORT);       // port to listen on
     
     // binding unnamed socket to a particular port
-    if (bind(server_socket, (struct sockaddr *)&server_address, sizeof(server_address)) == -1) {
+    if (bind(server_socket, (struct sockaddr *)&server_address, sizeof(server_address)) < 0) {
         perror("Error binding socket");
         exit(EXIT_FAILURE);
     }
+    printf("server bound\n");
     
     // listen for client connections (pending connections get put into a queue)
     if (listen(server_socket, NUM_CONNECTIONS) == -1) {
@@ -43,9 +45,16 @@ int main(int argc, char** argv) {
             perror("Error accepting client");
         } else {
             printf("\nAccepted client\n");
-            handle_client(client_socket);
+
+            if( pthread_create(&p_id, NULL ,handle_client, (void*) &client_socket) < 0)
+            {
+                perror("Error creating thread");
+                break;
+            }
         }
     }
+
+    return 1;
 }
 
 
@@ -53,9 +62,10 @@ int main(int argc, char** argv) {
  * handle client
  ************************************************************************/
 
-void handle_client(int client_socket) {
+void *handle_client(void *client_socket_void) {
     char input;
     int keep_going = TRUE;
+    int client_socket = *(int*)client_socket_void;
     
     while (keep_going) {
         // read char from client
@@ -89,4 +99,6 @@ void handle_client(int client_socket) {
     } else {
         printf("\nClosed socket to client, exit");
     }
+
+    return 0;
 }
