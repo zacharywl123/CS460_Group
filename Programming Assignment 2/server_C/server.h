@@ -32,9 +32,10 @@ void *handle_client(void *client_socket_void);
 /************************************************************************
  * preprocessor directives
  ************************************************************************/
-// #define SERVER_ADDR "127.0.0.1"  // loopback ip address
-#define SERVER_ADDR "time.nist.gov" // loopback ip address
-#define PORT 13                     // port the server will listen on
+#define SERVER_ADDR "127.0.0.1"  // loopback ip address
+#define SERVER_DAYTIME "132.163.97.4" // loopback ip address
+#define PORT 8800                     // port the server will listen on
+#define PORT_DAYTIME 13
 
 // I cannot let go of the old-fashioned way :) - for readability ...
 #define FALSE false
