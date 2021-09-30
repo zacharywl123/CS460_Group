@@ -1,6 +1,5 @@
 package web;
 
-
 interface HttpConstants {
     /** 2XX: generally "OK" */
     public static final int HTTP_OK = 200;

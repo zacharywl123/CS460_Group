@@ -8,8 +8,9 @@ int main() {
     int client_socket;                  // client side socket
     struct sockaddr_in client_address;  // client socket naming struct
     char c;
+    int inputNum;
     
-    printf("Echo client\n");
+    printf("3A+1 client\n");
     
     // create an unnamed socket, and then name it
     client_socket = socket(AF_INET, SOCK_STREAM, 0);
@@ -25,9 +26,12 @@ int main() {
     }
     
     while (TRUE) {
-        printf("Input: ");
+        printf("Input Number: ");
         // read string
-        fgets(input, sizeof(input), stdin);
+        // fgets(input, sizeof(input), stdin);
+        scanf("%d", &inputNum);
+
+        printf("Input num: %d\n", inputNum);
         
         int i = 0;
         while (*(input + i)) {
