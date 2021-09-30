@@ -97,6 +97,7 @@ class Worker extends Thread implements HttpConstants {
             // 0 < 2048
             while (nread < BUF_SIZE) {
 
+                // InputStream is = new BufferedInputStream(socket.getInputStream()) (DECLARED @ START OF FUNCT)
                 // setitng r to the end of INPUTSTREAM stream (last byte of data)
                 r = is.read(buffer, nread, BUF_SIZE - nread);
 
@@ -147,6 +148,7 @@ class Worker extends Thread implements HttpConstants {
                 doingGet = false;
                 index = 5;
             } else {
+                // PrintStream ps = new PrintStream(socket.getOutputStream()) (DECLARED @ START OF FUNCT)
                 /* we don't support this method */
                 ps.print("HTTP/1.0 " + HTTP_BAD_METHOD
                         + " unsupported method type: ");
