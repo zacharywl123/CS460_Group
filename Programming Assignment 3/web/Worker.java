@@ -64,14 +64,23 @@ class Worker extends Thread implements HttpConstants {
     }
 
     void handleClient() throws IOException {
+        //getinputstream returns an input stream for the given socket object
         InputStream is = new BufferedInputStream(socket.getInputStream());
+
+        //getoutputstream returns output stream for given socket (for writing bytes to this socket)
         PrintStream ps = new PrintStream(socket.getOutputStream());
+
         /* we will only block in read for this many milliseconds
          * before we fail with java.io.InterruptedIOException,
          * at which point we will abandon the connection.
          */
+
+        // sets a TIME OUT value for the socket (in this case 5000 milliseconds --> webserver --> timeout = 5000)
         socket.setSoTimeout(webServer.timeout);
+
+        // controls the amount of buffering used when transfering data
         socket.setTcpNoDelay(true);
+
         /* zero out the buffer from last time */
         for (int i = 0; i < BUF_SIZE; i++) {
             buffer[i] = 0;
@@ -85,15 +94,30 @@ class Worker extends Thread implements HttpConstants {
             int nread = 0, r = 0;
 
             outerloop:
+            // 0 < 2048
             while (nread < BUF_SIZE) {
+
+                // setitng r to the end of INPUTSTREAM stream (last byte of data)
                 r = is.read(buffer, nread, BUF_SIZE - nread);
+
+                // -1 means the end of the stream has been met
                 if (r == -1) {
                     /* EOF */
                     return;
                 }
+                // i is set to nread which still equals 0
                 int i = nread;
+
+                // nread = nread + r
                 nread += r;
+
+                //i still equals 0 < nread --> which is set to nread+=r --> increment index (i)
                 for (; i < nread; i++) {
+                    // if buffer array at index is equal to byte array '\n'
+                    //or
+                    // equal to byte array '\r' (\r is a carriage return character)
+
+                    //I think this is reading in one line of data and comparing it to each array? one being the buffer size and the other being the actual byte data???
                     if (buffer[i] == (byte) '\n' || buffer[i] == (byte) '\r') {
                         /* read one line */
                         break outerloop;
@@ -103,8 +127,12 @@ class Worker extends Thread implements HttpConstants {
 
             /* are we doing a GET or just a HEAD */
             boolean doingGet;
+
             /* beginning of file name */
             int index;
+
+            // I believe this checks for each byte at the start of the buffer
+            // in effort to see what the header argument is (i.e. GET or POST)
             if (buffer[0] == (byte) 'G'
                     && buffer[1] == (byte) 'E'
                     && buffer[2] == (byte) 'T'
@@ -122,9 +150,15 @@ class Worker extends Thread implements HttpConstants {
                 /* we don't support this method */
                 ps.print("HTTP/1.0 " + HTTP_BAD_METHOD
                         + " unsupported method type: ");
+                
+                // .write() is used to write a specific string on the stream
                 ps.write(buffer, 0, 5);
                 ps.write(EOL);
+
+                // .flush() clears the stream that may or may not be inside the stream 
                 ps.flush();
+
+                // closes the socket
                 socket.close();
                 return;
             }
