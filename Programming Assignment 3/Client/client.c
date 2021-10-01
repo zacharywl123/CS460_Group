@@ -24,46 +24,31 @@ int main() {
         perror("Error connecting to server!\n");
         exit(EXIT_FAILURE);
     }
-    
-    while (TRUE) {
-        printf("Input Number: ");
-        // read string
-        // fgets(input, sizeof(input), stdin);
-        if (sscanf(input, "%d", &inputNum) != 1){
-            perror("\nError reading input, exit");
-        } else if (inputNum < 1){
-            printf("\nNo valid number, exit\n");
-        } else {
 
-            inputNum = htonl(inputNum);
+    printf("Input Number: ");
+    // read string
+    fgets(input, sizeof(input), stdin);
+    if (sscanf(input, "%d", &inputNum) != 1){
+        perror("\nError reading input, exit");
+    } else if (inputNum < 1){
+        printf("\nNo valid number, exit\n");
+    } else {
 
-            write(client_socket, &inputNum, sizeof(int));
+        printf("\nInput: %d\n", inputNum);
 
-            read(client_socket, &result, sizeof(int));
+        inputNum = htonl(inputNum);
 
-            result = ntohl(result);
+        write(client_socket, &inputNum, sizeof(int));
 
-            printf("\nNumber of steps: %d\n", result);
-        }
+        read(client_socket, &result, sizeof(int));
 
-        // printf("Input num: %d\n", inputNum);
-        
-        // int i = 0;
-        // while (*(input + i)) {
-        //     // make the request to the server
-        //     write(client_socket, input + i, sizeof(char));
-        //     // get the result
-        //     read(client_socket, &c, sizeof(char));
-        //     if (c == 'q') {
-        //         close(client_socket);
-        //         printf("\nDone!\n");
-        //         exit(EXIT_SUCCESS);
-        //     }
-        //     printf("%c", c);
-        //     i++;
-        // }
+        //printf("\nNumber of steps: %d\n", result);
+
+        result = ntohl(result);
+
+        printf("\nNumber of steps: %d\n", result);
     }
-    
+        
     return EXIT_SUCCESS;
 }
 
