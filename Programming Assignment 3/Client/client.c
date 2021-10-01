@@ -42,8 +42,6 @@ int main() {
 
         read(client_socket, &result, sizeof(int));
 
-        //printf("\nNumber of steps: %d\n", result);
-
         result = ntohl(result);
 
         printf("\nNumber of steps: %d\n", result);

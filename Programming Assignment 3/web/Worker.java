@@ -64,8 +64,6 @@ class Worker extends Thread {
     }
 
     void handleClient() throws IOException {
-        //InputStream is = new BufferedInputStream(socket.getInputStream());
-        //PrintStream ps = new PrintStream(socket.getOutputStream());
         DataInputStream is = new DataInputStream(socket.getInputStream());
         DataOutputStream ps = new DataOutputStream(socket.getOutputStream());
 
@@ -77,11 +75,14 @@ class Worker extends Thread {
          */
         socket.setSoTimeout(webServer.timeout);
         socket.setTcpNoDelay(true);
+
         /* zero out the buffer from last time */
-        for (int i = 0; i < BUF_SIZE; i++) {
+        for (int i = 0; i < BUF_SIZE; i++) 
+        {
             buffer[i] = 0;
         }
-        try {
+        try 
+        {
             /* We only support HTTP GET/HEAD, and don't
              * support any fancy HTTP options,
              * so we're only interested really in
@@ -90,15 +91,15 @@ class Worker extends Thread {
             int nread = 0, r = 0;
 
             //outerloop:
-            while (nread < BUF_SIZE) {
-
-                //r = is.read(buffer, nread, BUF_SIZE - nread);
+            while (nread < BUF_SIZE) 
+            {
 
                 r = is.readInt();
 
                 System.out.println("r: " + Integer.toString(r));
 
-                if (r == -1) {
+                if (r == -1) 
+                {
                     /* EOF */
                     return;
                 }
@@ -129,8 +130,9 @@ class Worker extends Thread {
             socket.close();
             return;
 
-        } finally {
-            System.out.println("i: " + Integer.toString(index));
+        } 
+        finally 
+        {
             socket.close();
         }
         
