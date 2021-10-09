@@ -12,6 +12,12 @@ int main() {
     // create threadpool with THREADS_IN_POOL threads
     threadpool pool = threadpool_create();
 
+    int input;
+    printf("Enter an Integer: ");
+    scanf("%d", &input);
+    printf("Calculated Result: %d" , three_a_plus_one(input));
+    printf("\n");
+
     
     for (task_counter=1; task_counter<=NUMBER_TASKS; task_counter++)
     {
@@ -21,7 +27,7 @@ int main() {
 
     // lame way to wait for everybody to get done
     // in a network server, this is not needed as the main thread keeps accepting connections
-    sleep(8);
+    //sleep(8);
     
     exit(EXIT_SUCCESS);
 }
@@ -34,7 +40,7 @@ void three_a_plus_one_wrapper(void *number_ptr)
 {
     int number = *((int*)number_ptr);
     
-    printf("\nthread ID %p ----> %d: %d", pthread_self(), number, three_a_plus_one_rec(number));
+    printf("\nthread ID %p ----> %d: %d",(void * )pthread_self(), number, three_a_plus_one_rec(number));
 }
 
 

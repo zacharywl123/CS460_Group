@@ -18,7 +18,7 @@ int three_a_plus_one(int input);
 int three_a_plus_one_rec(int input);
 void three_a_plus_one_wrapper(void *number_ptr);
 
-#define NUMBER_TASKS 100000
+#define NUMBER_TASKS 1
 
 #define FALSE 0
 #define TRUE !FALSE
