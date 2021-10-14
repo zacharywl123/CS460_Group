@@ -5,7 +5,7 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
-class Worker extends Thread implements HttpConstants {
+class Worker extends Thread {
 
     final static int BUF_SIZE = 2048;
     static final byte[] EOL = {(byte) '\r', (byte) '\n'};
@@ -64,11 +64,11 @@ class Worker extends Thread implements HttpConstants {
     }
 
     void handleClient() throws IOException {
-        //getinputstream returns an input stream for the given socket object
-        InputStream is = new BufferedInputStream(socket.getInputStream());
 
-        //getoutputstream returns output stream for given socket (for writing bytes to this socket)
-        PrintStream ps = new PrintStream(socket.getOutputStream());
+        DataInputStream is = new DataInputStream(socket.getInputStream());
+        DataOutputStream ps = new DataOutputStream(socket.getOutputStream());
+
+        int index = 0;
 
         /* we will only block in read for this many milliseconds
          * before we fail with java.io.InterruptedIOException,
@@ -82,10 +82,12 @@ class Worker extends Thread implements HttpConstants {
         socket.setTcpNoDelay(true);
 
         /* zero out the buffer from last time */
-        for (int i = 0; i < BUF_SIZE; i++) {
+        for (int i = 0; i < BUF_SIZE; i++) 
+        {
             buffer[i] = 0;
         }
-        try {
+        try 
+        {
             /* We only support HTTP GET/HEAD, and don't
              * support any fancy HTTP options,
              * so we're only interested really in
@@ -93,159 +95,53 @@ class Worker extends Thread implements HttpConstants {
              */
             int nread = 0, r = 0;
 
-            outerloop:
-            // 0 < 2048
-            while (nread < BUF_SIZE) {
+            //outerloop:
+            while (nread < BUF_SIZE) 
+            {
 
-                // InputStream is = new BufferedInputStream(socket.getInputStream()) (DECLARED @ START OF FUNCT)
-                // setitng r to the end of INPUTSTREAM stream (last byte of data)
-                r = is.read(buffer, nread, BUF_SIZE - nread);
+                r = is.readInt();
 
-                // -1 means the end of the stream has been met
-                if (r == -1) {
+                System.out.println("r: " + Integer.toString(r));
+
+                if (r == -1) 
+                {
                     /* EOF */
                     return;
                 }
-                // i is set to nread which still equals 0
-                int i = nread;
-
-                // nread = nread + r
-                nread += r;
-
-                //i still equals 0 < nread --> which is set to nread+=r --> increment index (i)
-                for (; i < nread; i++) {
-                    // if buffer array at index is equal to byte array '\n'
-                    //or
-                    // equal to byte array '\r' (\r is a carriage return character)
-
-                    //I think this is reading in one line of data and comparing it to each array? one being the buffer size and the other being the actual byte data???
-                    if (buffer[i] == (byte) '\n' || buffer[i] == (byte) '\r') {
-                        /* read one line */
-                        break outerloop;
-                    }
-                }
-            }
-
-            /* are we doing a GET or just a HEAD */
-            boolean doingGet;
-
-            /* beginning of file name */
-            int index;
-
-            // I believe this checks for each byte at the start of the buffer
-            // in effort to see what the header argument is (i.e. GET or POST)
-            if (buffer[0] == (byte) 'G'
-                    && buffer[1] == (byte) 'E'
-                    && buffer[2] == (byte) 'T'
-                    && buffer[3] == (byte) ' ') {
-                doingGet = true;
-                index = 4;
-            } else if (buffer[0] == (byte) 'H'
-                    && buffer[1] == (byte) 'E'
-                    && buffer[2] == (byte) 'A'
-                    && buffer[3] == (byte) 'D'
-                    && buffer[4] == (byte) ' ') {
-                doingGet = false;
-                index = 5;
-            } else {
-                // PrintStream ps = new PrintStream(socket.getOutputStream()) (DECLARED @ START OF FUNCT)
-                /* we don't support this method */
-                ps.print("HTTP/1.0 " + HTTP_BAD_METHOD
-                        + " unsupported method type: ");
                 
-                // .write() is used to write a specific string on the stream
-                ps.write(buffer, 0, 5);
-                ps.write(EOL);
+                while(r != 1)
+                {
+                    if(r % 2 == 0)
+                    {
+                        r = (r / 2);
+                    }
+                    else
+                    {
+                        r = ( 3 * r + 1);
+                    }
 
-                // .flush() clears the stream that may or may not be inside the stream 
-                ps.flush();
+                    index++;
+                }
 
-                // closes the socket
+                ps.writeInt(index);
+
                 socket.close();
                 return;
+                
             }
 
-            int i = 0;
-            /* find the file name, from:
-             * GET /foo/bar.html HTTP/1.0
-             * extract "/foo/bar.html"
-             */
-            for (i = index; i < nread; i++) {
-                if (buffer[i] == (byte) ' ') {
-                    break;
-                }
-            }
-            String fname = (new String(buffer, 0, index,
-                    i - index)).replace('/', File.separatorChar);
-            if (fname.startsWith(File.separator)) {
-                fname = fname.substring(1);
-            }
+            ps.write(buffer, index, index + 1);
+            ps.write(EOL);
+            ps.flush();
+            socket.close();
+            return;
 
-            File targ = new File(webServer.root, fname);
-            webServer.print("" + targ);
-
-            if (targ.isDirectory()) {
-                File ind = new File(targ, "index.html");
-                if (ind.exists()) {
-                    targ = ind;
-                }
-            }
-            boolean OK = printHeaders(targ, ps);
-            if (doingGet) {
-                if (OK) {
-                    sendFile(targ, ps);
-                } else {
-                    send404(targ, ps);
-                }
-            }
-        } finally {
+        } 
+        finally 
+        {
             socket.close();
         }
-    }
-
-    boolean printHeaders(File targ, PrintStream ps) throws IOException {
-        boolean ret = false;
-        int rCode = 0;
-        if (!targ.exists()) {
-            rCode = HTTP_NOT_FOUND;
-            ps.print("HTTP/1.0 " + HTTP_NOT_FOUND + " not found");
-            ps.write(EOL);
-            ret = false;
-        } else {
-            rCode = HTTP_OK;
-            ps.print("HTTP/1.0 " + HTTP_OK + " OK");
-            ps.write(EOL);
-            ret = true;
-        }
-        webServer.log("From " + socket.getInetAddress().getHostAddress() + ": GET "
-                + targ.getAbsolutePath() + "-->" + rCode);
-        ps.print("Server: Simple java");
-        ps.write(EOL);
-        ps.print("Date: " + (new Date()));
-        ps.write(EOL);
-        if (ret) {
-            if (!targ.isDirectory()) {
-                ps.print("Content-length: " + targ.length());
-                ps.write(EOL);
-                ps.print("Last Modified: " + (new Date(targ.lastModified())));
-                ps.write(EOL);
-                String name = targ.getName();
-                int ind = name.lastIndexOf('.');
-                String ct = null;
-                if (ind > 0) {
-                    ct = (String) map.get(name.substring(ind));
-                }
-                if (ct == null) {
-                    ct = "unknown/unknown";
-                }
-                ps.print("Content-type: " + ct);
-                ps.write(EOL);
-            } else {
-                ps.print("Content-type: text/html");
-                ps.write(EOL);
-            }
-        }
-        return ret;
+        
     }
 
     void send404(File targ, PrintStream ps) throws IOException {
