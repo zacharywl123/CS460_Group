@@ -16,11 +16,11 @@
 
 int three_a_plus_one(int input);
 int three_a_plus_one_rec(int input);
-void three_a_plus_one_wrapper(void *number_ptr);
+void client_wrapper(void *number_ptr);
 
 #define NUMBER_TASKS 10000
-#define SERVER_ADDR "127.0.0.1"
-#define PORT 8881
+#define SERVER_ADDR "127.0.0.1" // loopback ip address
+#define PORT 23655              // port the server will listen on
 
 #define FALSE 0
 #define TRUE !FALSE

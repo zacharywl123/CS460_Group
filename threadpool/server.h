@@ -1,42 +1,37 @@
 /************************************************************************
  * libraries
  ************************************************************************/
-
 // should always be there ...
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <string.h>
 
 // socket/bind/listen/accept
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <signal.h>
+
 
 // read/write/close
 #include <sys/uio.h>
 #include <sys/types.h>
 #include <unistd.h>
 
-// I ADDED THIS STATEMENT (ECB)
-#include <signal.h>
-
-// multithreading
-#include <pthread.h>
-#include <syslog.h>
-
 /************************************************************************
  * function prototype declarations
  ************************************************************************/
-void *handle_client(void *client_socket_void);
+void *handle_client(void *generic_socket);
+int three_a_plus_one(int input);
+int three_a_plus_one_rec(int number);
+void readWrite(int socket, int id);
 
 /************************************************************************
  * preprocessor directives
  ************************************************************************/
-#define SERVER_ADDR "127.0.0.1"  // loopback ip address
-#define SERVER_DAYTIME "132.163.97.4" // loopback ip address
-#define PORT 8881                     // port the server will listen on
-#define PORT_DAYTIME 13
+#define SERVER_ADDR "127.0.0.1" // loopback ip address
+#define PORT 23655              // port the server will listen on
+#define MAX_THREADS 30
 
 // I cannot let go of the old-fashioned way :) - for readability ...
 #define FALSE false
@@ -44,9 +39,3 @@ void *handle_client(void *client_socket_void);
 
 // number of pending connections in the connection queue
 #define NUM_CONNECTIONS 100
-
-// struct for passing values to threads
-struct thread_args {
-    int server_socket;
-    int p_id;
-};

@@ -11,7 +11,7 @@
 #ifdef DBG
 // debug() - maskable debug message, expanded only if symbol DEBUG is defined
 #define debug(M, ...) fprintf(stderr, "\n[DEBUG] %s:%d: " M, __FILE__, __LINE__, ##__VA_ARGS__)
-#else 
+#else
 #define debug(M, ...)
 #endif
 
