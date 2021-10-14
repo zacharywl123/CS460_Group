@@ -64,6 +64,7 @@ class Worker extends Thread {
     }
 
     void handleClient() throws IOException {
+
         DataInputStream is = new DataInputStream(socket.getInputStream());
         DataOutputStream ps = new DataOutputStream(socket.getOutputStream());
 
@@ -73,7 +74,11 @@ class Worker extends Thread {
          * before we fail with java.io.InterruptedIOException,
          * at which point we will abandon the connection.
          */
+
+        // sets a TIME OUT value for the socket (in this case 5000 milliseconds --> webserver --> timeout = 5000)
         socket.setSoTimeout(webServer.timeout);
+
+        // controls the amount of buffering used when transfering data
         socket.setTcpNoDelay(true);
 
         /* zero out the buffer from last time */
@@ -119,6 +124,7 @@ class Worker extends Thread {
                 }
 
                 ps.writeInt(index);
+
                 socket.close();
                 return;
                 
