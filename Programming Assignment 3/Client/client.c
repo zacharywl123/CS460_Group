@@ -8,7 +8,7 @@ int main() {
     int client_socket;                  // client side socket
     struct sockaddr_in client_address;  // client socket naming struct
     char c;
-    int inputNum;
+    int inputNum, result;
     
     printf("3A+1 client\n");
     
@@ -24,31 +24,29 @@ int main() {
         perror("Error connecting to server!\n");
         exit(EXIT_FAILURE);
     }
-    
-    while (TRUE) {
-        printf("Input Number: ");
-        // read string
-        // fgets(input, sizeof(input), stdin);
-        scanf("%d", &inputNum);
 
-        printf("Input num: %d\n", inputNum);
-        
-        int i = 0;
-        while (*(input + i)) {
-            // make the request to the server
-            write(client_socket, input + i, sizeof(char));
-            // get the result
-            read(client_socket, &c, sizeof(char));
-            if (c == 'q') {
-                close(client_socket);
-                printf("\nDone!\n");
-                exit(EXIT_SUCCESS);
-            }
-            printf("%c", c);
-            i++;
-        }
+    printf("Input Number: ");
+    // read string
+    fgets(input, sizeof(input), stdin);
+    if (sscanf(input, "%d", &inputNum) != 1){
+        perror("\nError reading input, exit");
+    } else if (inputNum < 1){
+        printf("\nNo valid number, exit\n");
+    } else {
+
+        printf("\nInput: %d\n", inputNum);
+
+        inputNum = htonl(inputNum);
+
+        write(client_socket, &inputNum, sizeof(int));
+
+        read(client_socket, &result, sizeof(int));
+
+        result = ntohl(result);
+
+        printf("\nNumber of steps: %d\n", result);
     }
-    
+        
     return EXIT_SUCCESS;
 }
 
