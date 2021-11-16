@@ -11,13 +11,14 @@ FORMAT = 'utf-8'
 DISCONNECT_MESSAGE = "!DISCONNECT"
 ARITH_OPS = ['+', '-', '*', '/', '^', 'sqrt']
 
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.bind(ADDR)
+client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client.bind(ADDR)
 
-server.listen(5)
+client.listen(5)
 clients = []
 
 
+# given protocol code conduct math operation
 def conduct_operation(input_str):
     output = 'Error'
     input_list = input_str.split('_')
@@ -42,7 +43,7 @@ def conduct_operation(input_str):
                 output_num = num_1 * num_2
             
             elif operator == '/':
-                output_num = num_1 - num_2
+                output_num = num_1 / num_2
             
             elif operator == '^':
                 output_num = num_1 ** num_2
@@ -50,6 +51,16 @@ def conduct_operation(input_str):
         output = str(output_num)
 
     return output
+
+
+# sends the result to the client
+def send_result(conn, result):
+    result = result.encode(FORMAT)
+    result_length = len(result)
+    send_length = str(result_length).encode(FORMAT)
+    send_length += b' ' * (HEADER - len(send_length))
+    conn.send(send_length)
+    conn.send(result)
 
 
 # Handles connections from clients 
@@ -63,22 +74,24 @@ def handle_client(conn, addr):
         if message_length:
             message_length = int(message_length)
             message = conn.recv(message_length).decode(FORMAT)
-
+            
             if message == 'DISCONNECT_MESSAGE':
                 connected = False
-            
-            print(f"[{addr}]  Input: {message}")
-            result = conduct_operation(message)
-            print(f"[{addr}] Result: {result}")
+                print(f"[{addr}] CONNECTION CLOSED\n")
+            else:
+                print(f"[{addr}]  Input: {message}")
+                result = conduct_operation(message)
+                print(f"[{addr}] Result: {result}")
+                send_result(conn, result)
 
     conn.close()
 
 
 def start():
-    server.listen()
+    client.listen()
     print(f"[LISTENING] Server is listening on {SERVER}")
     while True:
-        conn, addr = server.accept()
+        conn, addr = client.accept()
         thread = threading.Thread(target=handle_client, args=(conn, addr))
         thread.start()
         print(f"[ACTIVE CONNECTIONS] {threading.activeCount() - 1}")
