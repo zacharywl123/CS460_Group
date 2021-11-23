@@ -1,7 +1,7 @@
 import socket
 
 HEADER = 64
-PORT = 5050
+PORT = 5005
 FORMAT = 'utf-8'
 DISCONNECT_MESSAGE = "!DISCONNECT"
 SERVER = "127.0.0.1"
@@ -9,9 +9,7 @@ ADDR = (SERVER, PORT)
 ARITH_OPS = ['+', '-', '*', '/']
 
 # initialize connection to server
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.connect(ADDR)
-
+server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 # handle sending of the operation strings to the server
 def send_operation(op_message):
@@ -19,8 +17,8 @@ def send_operation(op_message):
     message_length = len(op_message)
     send_length = str(message_length).encode(FORMAT)
     send_length += b' ' * (HEADER - len(send_length))
-    server.send(send_length)
-    server.send(op_message)
+    server.sendto(send_length, ADDR)
+    server.sendto(op_message, ADDR)
 
 
 # function that converts a math opertion in a string into a protocol string for the serer
@@ -56,7 +54,7 @@ def operation_to_protocol(op_str):
             output = '^' + '_' + first_num + '_' + second_num
      
     elif input_lst[0].lower() == 'quit':
-         output = 'DISCONNECT_MESSAGE'
+        output = 'DISCONNECT_MESSAGE'
 
     return output
 
@@ -73,7 +71,7 @@ while connected:
         output = operation_to_protocol(operation)
 
         if operation == 'quit':
-            break
+            quit()
 
         if output == 'Invalid':
             print("Invalid Input Try Again...\n")
@@ -88,10 +86,12 @@ while connected:
     send_operation(output)
 
     # recieve result
-    message_length = server.recv(HEADER).decode(FORMAT)
+    message_length, serv_addr = server.recvfrom(HEADER)
+    message_length = message_length.decode(FORMAT)
 
     if message_length:
         message_length = int(message_length)
-        result = server.recv(message_length).decode(FORMAT)
+        result, serv_addr = server.recvfrom(message_length)
+        result = result.decode(FORMAT)
 
     print(f"Result from server: {result}\n")

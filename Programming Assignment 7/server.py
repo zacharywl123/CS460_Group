@@ -3,19 +3,17 @@ import socket
 import math
 
 HEADER = 64
-PORT = 5050
+PORT = 5005
 SERVER = "127.0.0.1"
 #SERVER = socket.gethostbyname(socket.gethostname())
 ADDR = (SERVER, PORT)
 FORMAT = 'utf-8'
-DISCONNECT_MESSAGE = "!DISCONNECT"
 ARITH_OPS = ['+', '-', '*', '/', '^', 'sqrt']
 
-client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+#client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+client = socket.socket(socket.AF_INET, # Internet
+                       socket.SOCK_DGRAM) # UDP
 client.bind(ADDR)
-
-client.listen(5)
-clients = []
 
 
 # given protocol code conduct math operation
@@ -54,47 +52,32 @@ def conduct_operation(input_str):
 
 
 # sends the result to the client
-def send_result(conn, result):
+def send_result(addr, result):
     result = result.encode(FORMAT)
     result_length = len(result)
     send_length = str(result_length).encode(FORMAT)
     send_length += b' ' * (HEADER - len(send_length))
-    conn.send(send_length)
-    conn.send(result)
-
-
-# Handles connections from clients 
-def handle_client(conn, addr):
-    print(f"[NEW CONNECTION] {addr} connected")
-    connected = True
-    while connected:
-
-        message_length = conn.recv(HEADER).decode(FORMAT)
-
-        if message_length:
-            message_length = int(message_length)
-            message = conn.recv(message_length).decode(FORMAT)
-            
-            if message == 'DISCONNECT_MESSAGE':
-                connected = False
-                print(f"[{addr}] CONNECTION CLOSED\n")
-            else:
-                print(f"[{addr}]  Input: {message}")
-                result = conduct_operation(message)
-                print(f"[{addr}] Result: {result}")
-                send_result(conn, result)
-
-    conn.close()
+    client.sendto(send_length, addr)
+    client.sendto(result, addr)
 
 
 def start():
-    client.listen()
     print(f"[LISTENING] Server is listening on {SERVER}")
     while True:
-        conn, addr = client.accept()
-        thread = threading.Thread(target=handle_client, args=(conn, addr))
-        thread.start()
-        print(f"[ACTIVE CONNECTIONS] {threading.activeCount() - 1}")
+
+        message_length, cli_addr = client.recvfrom(HEADER)
+        message_length = message_length.decode(FORMAT)
+
+        if int(message_length) > 0:
+            message_length = int(message_length)
+            message, cli_addr = client.recvfrom(message_length)
+            message = message.decode(FORMAT)
+            
+            print(f"[{cli_addr}]  Input: {message}")
+            result = conduct_operation(message)
+            print(f"[{cli_addr}] Result: {result}")
+            send_result(cli_addr, result)
+            message_length = 0
 
 if __name__ == "__main__":
     print ("[STARTING] server is starting ... ")
